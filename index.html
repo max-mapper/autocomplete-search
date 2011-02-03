@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Boston Contacts</title>
+
+  <link rel="stylesheet" href="http://jashkenas.github.com/docco/resources/docco.css">
+  <link rel="stylesheet" href="css/jquery.autocomplete.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>    	
+  	body {font-size:13px; font-family:arial, sans-serif; width:700px; margin:100px auto;}
+  </style>
+  <script src="script/jquery-1.4.2.js" type="text/javascript" charset="utf-8"></script>
+  <script src="script/jquery.autocomplete.js" type="text/javascript" charset="utf-8"></script>
+  <script src="script/jquery.placeholder.js" type="text/javascript" charset="utf-8"></script>
+  <script src="script/mustache.js" type="text/javascript" charset="utf-8"></script>
+  <script type='text/javascript'>
+    $(function() {
+      $.ajax({
+        url: "http://api.scraperwiki.com/api/1.0/datastore/getdata",
+        dataType: 'jsonp',
+        data: {
+          "name": "boston-contacts",
+          "limit": 500
+        },
+        success: function(data) {
+          var orgs = $.map(data, function(d){
+            return d["organization"];
+          });
+          
+          bindAutocomplete(data);
+        }
+      });
+      
+      var bindAutocomplete = function(items) {
+        $("#autocomplete").autocomplete(items, {
+          matchContains: true,
+          formatItem: function (row, i, n) {
+                      return row.organization;
+                  },
+          formatMatch: function(row, i, max) {
+            return JSON.stringify(row);
+          }
+        })
+
+        $("#autocomplete").result(function(event, data, formatted) {
+          $('#autocomplete').val('').blur().focus();
+          $('#right_content').html(Mustache.to_html($('#orgTemplate').text(), data));
+        })
+      }
+
+      $('#autocomplete').placeholder();
+      $('#autocomplete').focus().blur();
+    })
+
+  </script>
+</head>
+<body class="bp">
+  <div id='container'>
+    <div id="background"></div>
+    <table cellspacing=0 cellpadding=0>
+    <thead>
+      <tr>
+        <th class='docs'><h1>Boston City Contact</h1></th>
+        <th><p></p></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr id='section-1'>
+        <td id='left_content' class='docs'>
+          <p>Search through City of Boston departments for contact information</p>
+          </div>
+          <input id="autocomplete" placeholder="Search for a contact..."/>
+          <div id="inner_content" class="rounded"></div>
+        </td>
+        <td id="right_content">
+        </td>
+      </tr>
+      </table>
+  </div>
+  <script id="orgTemplate" type="text/mustache" data-engine="mustache">
+    <div class="organization">
+      <h2>{{{organization}}}</h2>
+      <h3>Phone:</h3><span>{{{phone}}}</span>
+      <h3>Contact:</h3><span>{{{contact}}}</span>
+      <h3>Address:</h3><span>{{{address}}}</span>
+      <h3>Email:</h3><span>{{{email}}}</span>
+      <h3>Fax:</h3><span>{{{fax}}}</span>
+      <h3>Website:</h3><span>{{{url}}}</span>
+    </div>
+    <br clear="all">
+   </script>
+</body>
+</html>
